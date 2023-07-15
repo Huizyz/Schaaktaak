@@ -18,6 +18,9 @@ public:
 
 private:
     Game g;
+    int selectedPieceRow;
+    int selectedPieceCol;
+    zw currentPlayer;
 
     void clicked(int x, int y) override;
     void newGame() override;

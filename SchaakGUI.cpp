@@ -2,126 +2,71 @@
 // Created by toonc on 12/17/2021.
 //
 
+#include <iostream>
 #include "SchaakGUI.h"
+#include "game.h"
 #include "guicode/message.h"
 #include "guicode/fileIO.h"
 
 // Constructor
 SchaakGUI::SchaakGUI():ChessWindow(nullptr) {
+    g.setStartBord();
+    selectedPieceRow = -1;
+    selectedPieceCol = -1;
+    currentPlayer = wit;
     update();
 }
 
 
-// Deze functie wordt opgeroepen telkens er op het schaakbord
-// geklikt wordt. x,y geeft de positie aan waar er geklikt
-// werd; r is de 0-based rij, k de 0-based kolom
 void SchaakGUI::clicked(int r, int k) {
-    // Wat hier staat is slechts een voorbeeldje dat wordt afgespeeld ter illustratie.
-    // Jouw code zal er helemaal anders uitzien en zal enkel de aanpassing in de spelpositie maken en er voor
-    // zorgen dat de visualisatie (al dan niet via update) aangepast wordt.
-
-    // Volgende schaakstukken worden aangemaakt om het voorbeeld te illustreren.
-    // In jouw geval zullen de stukken uit game g komen
-    SchaakStuk* p1=new Pion(zwart);
-    SchaakStuk* p2=new Pion(zwart);
-    SchaakStuk* Q=new Koningin(zwart);
-    SchaakStuk* K=new Koning(zwart);
-
-    SchaakStuk* p3=new Pion(wit);
-    SchaakStuk* P=new Paard(wit);
-    SchaakStuk* L=new Loper(wit);
-    SchaakStuk* Kw=new Koning(wit);
-
-
-    removeAllMarking();  // Alle markeringen weg
-    clearBoard();        // Alle stukken weg
-
-    // plaats alle stukken
-    setItem(3,0,P);
-    setItem(1,1,p1);
-    setItem(0,3,Q);
-    setItem(0,4,K);
-    setItem(2,4,p2);
-    setItem(3,3,p3);
-    setItem(2,7,L);
-    setItem(5,3,Kw);
-
-    if (displayKills()) {
-        // Markeer de stukken die je kan slaan
-        setPieceThreat(3,0,true);
-        setPieceThreat(3,3,true);
-    }
-    if (displayThreats()) {
-        // Markeer jouw bedreigde stukken
-        setPieceThreat(2,4,true);
-        setPieceThreat(1,1,true);
-    }
-
-    message("Illustratie voor click; zwart is aan de beurt");
-
-    removeAllPieceThreats();  // Eens een stuk gekozen is, worden alle bedreigde stukken niete langer gemarkeerd
-    setTileSelect(2,4,true);  // De geselecteerde positie wordt steeds gemarkeerd
-    if (displayMoves()) {
-        // Geef de mogelijke zetten weer
-        setTileFocus(3,3,true);
-        setTileFocus(3,4,true);
-    }
-
-    message("Illustratie na click; zwart kiest doelpositie");
-
-    clearBoard();
-    removeAllMarking();
-
-    setItem(3,0,P);
-    setItem(1,1,p1);
-    setItem(0,3,Q);
-    setItem(0,4,K);
-    setItem(2,7,L);
-    setItem(5,3,Kw);
-    setItem(3,3,p2);
-
-    if (displayKills()) {
-        setPieceThreat(2,4,true);
-        setPieceThreat(1,1,true);
-    }
-    if (displayThreats()) {
-        setPieceThreat(3,0,true);
-    }
-
-
-    message("Illustratie na doelpositie gekozen is; nu is wit aan de beurt");
-
-    removeAllPieceThreats();
-
-    setTileSelect(2,7,true);
-    if (displayMoves()) {
-        for (int r=0;r<8;r++) {
-            if (r==2) continue;
-            int c=7-abs(r-2);
-            setTileFocus(r,c,true);
+    if (selectedPieceRow == -1 && selectedPieceCol == -1) { //if no piece is selected
+        SchaakStuk* s = g.getPiece(r, k);
+        if (s != nullptr && s->getKleur() == currentPlayer) {
+            selectedPieceRow = r;
+            selectedPieceCol = k;
+            setTileSelect(r, k, true);
+        }
+        // Get all valid moves for selected piece
+        if (displayMoves()) {
+            if(s->getKleur() == currentPlayer){
+                vector<pair<int, int>> valid_moves = s->geldige_zetten(g);
+                for (auto move: valid_moves) {
+                    setTileFocus(move.first, move.second, true);
+                    // Check if the destination of the move contains a piece
+                    if (g.getPiece(move.first, move.second) != nullptr) {
+                        setPieceThreat(move.first, move.second, true);
+                    }
+                }
+            }
+        }
+    } else { //if a piece is selected
+        setTileSelect(selectedPieceRow, selectedPieceCol, false);
+        // Get all valid moves for selected piece
+        for (int r = 0; r < 8; r++) {
+            for (int k = 0; k < 8; k++) {
+                setTileFocus(r, k, false);
+                setPieceThreat(r,k, false);
+            }
+        }
+        if (r == selectedPieceRow && k == selectedPieceCol) { //if the same piece is clicked again
+            selectedPieceRow = -1;
+            selectedPieceCol = -1;
+        } else { //if a different position is clicked
+            if (g.move(g.getPiece(selectedPieceRow, selectedPieceCol), r, k)) {
+                currentPlayer = currentPlayer == wit ? zwart : wit;
+                update();
+            } else {
+                message("This move is invalid.");
+            }
+            selectedPieceRow = -1;
+            selectedPieceCol = -1;
         }
     }
-    if (displayThreats()) {
-        setTileThreat(0,5,true);
-        setTileThreat(3,6,true);
-    }
-
-    message("Wit stuk geselecteerd; wit moet nu een doelpositie kiezen");
-    removeAllMarking();
-    // etc. etc. ...
-
-    delete p1;
-    delete p2;
-    delete Q;
-    delete K;
-    delete p3;
-    delete P;
-    delete L;
-    delete Kw;
 }
 
-void SchaakGUI::newGame()
-{}
+void SchaakGUI::newGame() {
+
+}
 
 
 void SchaakGUI::save() {
@@ -186,6 +131,15 @@ void SchaakGUI::visualizationChange() {
 // Update de inhoud van de grafische weergave van het schaakbord (scene)
 // en maak het consistent met de game state in variabele g.
 void SchaakGUI::update() {
-
+    clearBoard();
+    removeAllMarking();
+    for(int r = 0; r < 8; r++) {
+        for (int k = 0; k < 8; k++) {
+            SchaakStuk* s = this->g.getPiece(r,k);
+            if(s != nullptr){
+                this->setItem(r,k, s);
+            }
+        }
+    }
 }
 
