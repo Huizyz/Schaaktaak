@@ -12,6 +12,7 @@ Piece Pion::piece() const {
     return Piece(Piece::Pawn,getKleur()==wit?Piece::White:Piece::Black);
 }
 
+// int direction: -1 = wit, 1 = zwart
 vector<pair<int, int>> Pion::geldige_zetten(Game& g) {
     vector<pair<int, int>> valid_moves;
     int direction = (getKleur() == zwart ? 1 : -1);
@@ -21,7 +22,8 @@ vector<pair<int, int>> Pion::geldige_zetten(Game& g) {
         valid_moves.push_back({ current_row + direction, current_col });
     }
     if (current_row == (getKleur() == zwart ? 1 : 6)) {
-        if (g.getPiece(current_row + 2 * direction, current_col) == nullptr) {
+        if (g.getPiece(current_row + direction, current_col) == nullptr &&
+            g.getPiece(current_row + 2 * direction, current_col) == nullptr) {
             valid_moves.push_back({ current_row + 2 * direction, current_col });
         }
     }

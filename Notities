@@ -16,4 +16,6 @@ game does not end when king gets eaten; implement game over function.
 
 problem 4
 king can move onto dangerous squares, check if this has to be fixed
+
 Pawn:
+when first moving knight above pawn if pawn hasnt moved yet it can jump over it
