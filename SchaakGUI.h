@@ -13,7 +13,6 @@
 class SchaakGUI:public ChessWindow {
 public:
     SchaakGUI();
-
     void update();
 
 private:
@@ -29,6 +28,14 @@ private:
     void undo() override;
     void redo() override;
     void visualizationChange() override;
+    void moveSelectedPiece(int r, int k);
+    void deselectPiece();
+    void handlePieceSelected(int r, int k);
+    void highlightValidMoves(SchaakStuk& piece);
+    void selectPiece(int r, int k);
+    void handleNoPieceSelected(int r, int k);
+    bool noPieceSelected() const;
+
 
 /*  Overgeerfde functies van ChessWindow:
 

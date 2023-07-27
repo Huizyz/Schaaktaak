@@ -27,6 +27,7 @@ public:
     bool pat(zw kleur);
     bool gameOver();
     bool kingInCheckAfterMove(int from_row, int from_col, int to_row, int to_col);
+    void resetGame();
 
     //getter
     SchaakStuk* getPiece(int r, int k);

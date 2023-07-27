@@ -19,53 +19,84 @@ SchaakGUI::SchaakGUI():ChessWindow(nullptr) {
 
 
 void SchaakGUI::clicked(int r, int k) {
-    if (selectedPieceRow == -1 && selectedPieceCol == -1) { //if no piece is selected
-        SchaakStuk* s = g.getPiece(r, k);
-        if (s != nullptr && s->getKleur() == currentPlayer) {
-            selectedPieceRow = r;
-            selectedPieceCol = k;
-            setTileSelect(r, k, true);
-        }
-        // Get all valid moves for selected piece
-        if (displayMoves()) {
-            if(s->getKleur() == currentPlayer){
-                vector<pair<int, int>> valid_moves = s->geldige_zetten(g);
-                for (auto move: valid_moves) {
-                    setTileFocus(move.first, move.second, true);
-                    // Check if the destination of the move contains a piece
-                    if (g.getPiece(move.first, move.second) != nullptr) {
-                        setPieceThreat(move.first, move.second, true);
-                    }
-                }
-            }
-        }
-    } else { //if a piece is selected
-        setTileSelect(selectedPieceRow, selectedPieceCol, false);
-        // Get all valid moves for selected piece
-        for (int r = 0; r < 8; r++) {
-            for (int k = 0; k < 8; k++) {
-                setTileFocus(r, k, false);
-                setPieceThreat(r,k, false);
-            }
-        }
-        if (r == selectedPieceRow && k == selectedPieceCol) { //if the same piece is clicked again
-            selectedPieceRow = -1;
-            selectedPieceCol = -1;
-        } else { //if a different position is clicked
-            if (g.move(g.getPiece(selectedPieceRow, selectedPieceCol), r, k)) {
-                currentPlayer = currentPlayer == wit ? zwart : wit;
-                update();
-            } else {
-                message("This move is invalid.");
-            }
-            selectedPieceRow = -1;
-            selectedPieceCol = -1;
+    if (noPieceSelected()) {
+        handleNoPieceSelected(r, k);
+    } else {
+        handlePieceSelected(r, k);
+    }
+}
+
+bool SchaakGUI::noPieceSelected() const {
+    return (selectedPieceRow == -1 && selectedPieceCol == -1);
+}
+
+void SchaakGUI::handleNoPieceSelected(int r, int k) {
+    SchaakStuk* s = g.getPiece(r, k);
+    if (s != nullptr && s->getKleur() == currentPlayer) {
+        selectPiece(r, k);
+        if (displayMoves() && s->getKleur() == currentPlayer) {
+            highlightValidMoves(*s);
         }
     }
 }
 
-void SchaakGUI::newGame() {
+void SchaakGUI::selectPiece(int r, int k) {
+    selectedPieceRow = r;
+    selectedPieceCol = k;
+    setTileSelect(r, k, true);
+}
 
+void SchaakGUI::highlightValidMoves(SchaakStuk& piece) {
+    vector<pair<int, int>> valid_moves = piece.geldige_zetten(g);
+    for (auto move : valid_moves) {
+        setTileFocus(move.first, move.second, true);
+        SchaakStuk* targetPiece = g.getPiece(move.first, move.second);
+        if (targetPiece != nullptr) {
+            setPieceThreat(move.first, move.second, true);
+        }
+    }
+}
+
+void SchaakGUI::handlePieceSelected(int r, int k) {
+    setTileSelect(selectedPieceRow, selectedPieceCol, false);
+    removeAllMarking();
+    if (r == selectedPieceRow && k == selectedPieceCol) {
+        deselectPiece();
+    } else {
+        moveSelectedPiece(r, k);
+    }
+}
+
+void SchaakGUI::deselectPiece() {
+    selectedPieceRow = -1;
+    selectedPieceCol = -1;
+}
+
+void SchaakGUI::moveSelectedPiece(int r, int k) {
+    SchaakStuk* selectedPiece = g.getPiece(selectedPieceRow, selectedPieceCol);
+    if (g.move(selectedPiece, r, k)) {
+        currentPlayer = (currentPlayer == wit) ? zwart : wit;
+        update();
+    } else {
+        message("This move is invalid.");
+    }
+    deselectPiece();
+}
+
+
+
+void SchaakGUI::newGame() {
+    // Clear the chessboard and reset the GUI
+    clearBoard();
+    removeAllMarking();
+    selectedPieceRow = -1;
+    selectedPieceCol = -1;
+
+    // Reset the game object and set the starting positions for the pieces
+    g.resetGame();
+    // Update the GUI to display the new game state
+    currentPlayer = wit;
+    update();
 }
 
 
@@ -114,7 +145,6 @@ void SchaakGUI::open() {
     update();
 }
 
-
 void SchaakGUI::undo() {
     message("Je hebt undo gekozen");
 }
@@ -123,12 +153,10 @@ void SchaakGUI::redo() {
     message("Je hebt redo gekozen");
 }
 
-
 void SchaakGUI::visualizationChange() {
     QString visstring = QString(displayMoves()?"T":"F")+(displayKills()?"T":"F")+(displayThreats()?"T":"F");
     message(QString("Visualization changed : ")+visstring);
 }
-
 
 // Update de inhoud van de grafische weergave van het schaakbord (scene)
 // en maak het consistent met de game state in variabele g.

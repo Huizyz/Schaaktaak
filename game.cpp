@@ -14,79 +14,35 @@ Game::~Game() {}
 
 // Zet het bord klaar; voeg de stukken op de juiste plaats toe
 void Game::setStartBord() {
+    // Set black pawns
+    for (int i = 0; i < 8; i++) {
+        setPiece(1, i, new Pion(zwart));
+    }
 
-    const int numPions = 8;
+    // Set white pawns
+    for (int i = 0; i < 8; i++) {
+        setPiece(6, i, new Pion(wit));
+    }
 
-    SchaakStuk* p1=new Pion(zwart);
-    SchaakStuk* p2=new Pion(zwart);
-    SchaakStuk* p3=new Pion(zwart);
-    SchaakStuk* p4=new Pion(zwart);
-    SchaakStuk* p5=new Pion(zwart);
-    SchaakStuk* p6=new Pion(zwart);
-    SchaakStuk* p7=new Pion(zwart);
-    SchaakStuk* p8=new Pion(zwart);
-    setPiece(1,0,p1);
-    setPiece(1,1,p2);
-    setPiece(1,2,p3);
-    setPiece(1,3,p4);
-    setPiece(1,4,p5);
-    setPiece(1,5,p6);
-    setPiece(1,6,p7);
-    setPiece(1,7,p8);
+    // Set black pieces
+    setPiece(0, 0, new Toren(zwart));
+    setPiece(0, 1, new Paard(zwart));
+    setPiece(0, 2, new Loper(zwart));
+    setPiece(0, 3, new Koningin(zwart));
+    setPiece(0, 4, new Koning(zwart));
+    setPiece(0, 5, new Loper(zwart));
+    setPiece(0, 6, new Paard(zwart));
+    setPiece(0, 7, new Toren(zwart));
 
-    SchaakStuk* wp1=new Pion(wit);
-    SchaakStuk* wp2=new Pion(wit);
-    SchaakStuk* wp3=new Pion(wit);
-    SchaakStuk* wp4=new Pion(wit);
-    SchaakStuk* wp5=new Pion(wit);
-    SchaakStuk* wp6=new Pion(wit);
-    SchaakStuk* wp7=new Pion(wit);
-    SchaakStuk* wp8=new Pion(wit);
-    setPiece(6,0,wp1);
-    setPiece(6,1,wp2);
-    setPiece(6,2,wp3);
-    setPiece(6,3,wp4);
-    setPiece(6,4,wp5);
-    setPiece(6,5,wp6);
-    setPiece(6,6,wp7);
-    setPiece(6,7,wp8);
-
-    SchaakStuk* Q=new Koningin(zwart);
-    SchaakStuk* wQ=new Koningin(wit);
-    setPiece(0,3,Q);
-    setPiece(7,3,wQ);
-
-    SchaakStuk* K=new Koning(zwart);
-    SchaakStuk* wK=new Koning(wit);
-    setPiece(0,4,K);
-    setPiece(7,4,wK);
-
-    SchaakStuk* P=new Paard(zwart);
-    SchaakStuk* wP=new Paard(wit);
-    setPiece(0,1,P);
-    setPiece(7,1,wP);
-    SchaakStuk* P2=new Paard(zwart);
-    SchaakStuk* wP2=new Paard(wit);
-    setPiece(0,6,P2);
-    setPiece(7,6,wP2);
-
-    SchaakStuk* L=new Loper(zwart);
-    SchaakStuk* wL=new Loper(wit);
-    setPiece(0,2,L);
-    setPiece(7,2,wL);
-    SchaakStuk* L2=new Loper(zwart);
-    SchaakStuk* wL2=new Loper(wit);
-    setPiece(0,5,L2);
-    setPiece(7,5,wL2);
-
-    SchaakStuk* T=new Toren(zwart);
-    SchaakStuk* wT=new Toren(wit);
-    setPiece(0,0,T);
-    setPiece(7,0,wT);
-    SchaakStuk* T2=new Toren(zwart);
-    SchaakStuk* wT2=new Toren(wit);
-    setPiece(0,7,T2);
-    setPiece(7,7,wT2);
+    // Set white pieces
+    setPiece(7, 0, new Toren(wit));
+    setPiece(7, 1, new Paard(wit));
+    setPiece(7, 2, new Loper(wit));
+    setPiece(7, 3, new Koningin(wit));
+    setPiece(7, 4, new Koning(wit));
+    setPiece(7, 5, new Loper(wit));
+    setPiece(7, 6, new Paard(wit));
+    setPiece(7, 7, new Toren(wit));
 }
 
 // Verplaats stuk s naar positie (r,k)
@@ -301,4 +257,15 @@ bool Game::gameOver() {
         return true;
     }
     return false;
+}
+
+void Game::resetGame() {
+    // Remove all pieces from the chessboard
+    for (auto& entry : schaakbord) {
+        delete entry.second; // Free memory of the piece object
+    }
+    schaakbord.clear(); // Clear the chessboard
+
+    // Call setStartBord() to set the starting positions for the pieces
+    setStartBord();
 }
