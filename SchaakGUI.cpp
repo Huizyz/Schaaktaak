@@ -119,7 +119,9 @@ void SchaakGUI::undo() {
     message("Je hebt undo gekozen");
 }
 
-void SchaakGUI::redo() {}
+void SchaakGUI::redo() {
+    message("Je hebt redo gekozen");
+}
 
 
 void SchaakGUI::visualizationChange() {
@@ -142,4 +144,3 @@ void SchaakGUI::update() {
         }
     }
 }
-

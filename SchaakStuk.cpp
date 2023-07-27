@@ -251,13 +251,26 @@ vector<pair<int, int>> Koning::geldige_zetten(Game& g) {
             if (new_row < 0 || new_row > 7 || new_col < 0 || new_col > 7) continue; // Skip out of bound positions
             SchaakStuk* piece = g.getPiece(new_row, new_col);
             if (piece == nullptr || piece->getKleur() != getKleur()) {
-                valid_moves.emplace_back(new_row, new_col);
+                // Temporarily try out the move
+                SchaakStuk* original_piece = g.getPiece(new_row, new_col);
+                g.setPiece(new_row, new_col, this);
+                g.setPiece(current_row, current_col, nullptr);
+
+                // Check if the king is in check after the move
+                if (!g.schaak(getKleur())) {
+                    valid_moves.emplace_back(new_row, new_col);
+                }
+
+                // Revert the move
+                g.setPiece(current_row, current_col, this);
+                g.setPiece(new_row, new_col, original_piece);
             }
         }
     }
 
     return valid_moves;
 }
+
 
 
 Piece Koningin::piece() const {

@@ -4,6 +4,7 @@
 //
 
 #include "game.h"
+#include "guicode/message.h"
 
 Game::Game() {
     currentPlayer = zwart;
@@ -113,28 +114,147 @@ bool Game::move(SchaakStuk* s, int r, int k) {
         schaakbord.erase(make_pair(current_row, current_col));
         // place the piece in the new position
         setPiece(r, k, s);
+
+        // Check if the game is over
+        if (gameOver()) {
+            // Display appropriate message for game over
+            if (schaakmat(currentPlayer)) {
+                message("Spel afgelopen. Gewonnen door ");
+                message(currentPlayer == zwart ? "wit" : "zwart");
+                message("!");
+            } else if (pat(currentPlayer)) {
+                message("Spel afgelopen. Het is een gelijkspel (pat)!");
+            }
+        }
+
         return true;
     } else {
         return false;
     }
 }
 
+
 // Geeft true als kleur schaak staat
 bool Game::schaak(zw kleur) {
+    // Get the position of the king of the given color
+    int king_row = -1;
+    int king_col = -1;
+    for (auto& pair : schaakbord) {
+        if (pair.second != nullptr && pair.second->getKleur() == kleur && dynamic_cast<Koning*>(pair.second) != nullptr) {
+            king_row = pair.first.first;
+            king_col = pair.first.second;
+            break;
+        }
+    }
+
+    // If king's position not found, return false (king is not on the board)
+    if (king_row == -1 || king_col == -1) {
+        return false;
+    }
+
+    // Check if any of the opponent's pieces can attack the king's position
+    zw opponent_color = (kleur == wit) ? zwart : wit;
+    for (auto& entry : schaakbord) {
+        if (entry.second != nullptr && entry.second->getKleur() == opponent_color) {
+            vector<pair<int, int>> valid_moves = entry.second->geldige_zetten(*this);
+            for (auto& move : valid_moves) {
+                if (move.first == king_row && move.second == king_col) {
+                    // The king is in check, return true
+                    return true;
+                }
+            }
+        }
+    }
+
+    // If no opponent's piece can attack the king, return false
     return false;
 }
 
 // Geeft true als kleur schaakmat staat
 bool Game::schaakmat(zw kleur) {
-    return false;
+    // Check if the king is in check
+    if (!schaak(kleur)) {
+        return false; // The king is not in checkmate
+    }
+
+    // Get the position of the king of the given color
+    int king_row = -1;
+    int king_col = -1;
+    for (auto& entry : schaakbord) {
+        if (entry.second != nullptr && entry.second->getKleur() == kleur && dynamic_cast<Koning*>(entry.second) != nullptr) {
+            king_row = entry.first.first;
+            king_col = entry.first.second;
+            break;
+        }
+    }
+
+    // If king's position not found, return false (king is not on the board)
+    if (king_row == -1 || king_col == -1) {
+        return false;
+    }
+
+    // Check if the king has any valid moves to get out of check
+    Koning* king = dynamic_cast<Koning*>(schaakbord[{king_row, king_col}]);
+    if (king) {
+        vector<pair<int, int>> valid_moves = king->geldige_zetten(*this);
+        for (auto& move : valid_moves) {
+            // Check if the king can move to the position without being in check
+            if (!kingInCheckAfterMove(king_row, king_col, move.first, move.second)) {
+                return false; // The king has at least one valid move to get out of check
+            }
+        }
+    }
+
+    // Check if any other piece of the same color can move to block the attack or capture the attacker
+    for (auto& entry : schaakbord) {
+        if (entry.second != nullptr && entry.second->getKleur() == kleur && entry.second != king) {
+            vector<pair<int, int>> valid_moves = entry.second->geldige_zetten(*this);
+            for (auto& move : valid_moves) {
+                // Check if the piece can move to block or capture the attacker without putting the king in check
+                if (!kingInCheckAfterMove(king_row, king_col, move.first, move.second)) {
+                    return false; // Another piece can move to block or capture the attacker
+                }
+            }
+        }
+    }
+
+    // If the king is in check and has no valid moves to get out of check, and no other piece can block or capture the attacker, it's checkmate
+    return true;
 }
+
+bool Game::kingInCheckAfterMove(int from_row, int from_col, int to_row, int to_col) {
+    // Temporarily make the move on a copy of the board
+    Game temp_board = *this;
+    temp_board.move(temp_board.getPiece(from_row, from_col), to_row, to_col);
+
+    // Check if the king of the moved piece's color is in check
+    return temp_board.schaak(getPiece(to_row, to_col)->getKleur());
+}
+
 
 // Geeft true als kleur pat staat
 // (pat = geen geldige zet mogelijk, maar kleur staat niet schaak;
 // dit resulteert in een gelijkspel)
 bool Game::pat(zw kleur) {
-    return false;
+    // Check if the king of the given color is in check
+    if (schaak(kleur)) {
+        return false; // The king is in check, so it's not pat
+    }
+
+    // Check if there is any valid move for any piece of the given color
+    for (auto& entry : schaakbord) {
+        if (entry.second != nullptr && entry.second->getKleur() == kleur) {
+            vector<pair<int, int>> valid_moves = entry.second->geldige_zetten(*this);
+            if (!valid_moves.empty()) {
+                return false; // At least one piece has a valid move, so it's not pat
+            }
+        }
+    }
+
+    // If no piece of the given color has valid moves, it's pat
+    return true;
 }
+
 
 // Geeft een pointer naar het schaakstuk dat op rij r, kolom k staat
 // Als er geen schaakstuk staat op deze positie, geef nullptr terug
@@ -176,8 +296,8 @@ bool Game::gameOver() {
     if (schaakmat(currentPlayer)) {
         return true;
     }
-    // Check if current player is in stalemate
-    if (schaak(currentPlayer)) {
+    // Check if current player is in stalemate (pat)
+    if (pat(currentPlayer)) {
         return true;
     }
     return false;
