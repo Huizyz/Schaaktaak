@@ -38,9 +38,10 @@ public:
     void setStartBord();
     void setPiece(int r, int k, SchaakStuk* s);
 
+    map<pair<int, int>, SchaakStuk*> schaakbord;
+
 private:
     zw currentPlayer;
-    map<pair<int, int>, SchaakStuk*> schaakbord;
 };
 
 

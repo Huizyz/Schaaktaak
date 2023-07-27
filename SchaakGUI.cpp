@@ -17,12 +17,13 @@ SchaakGUI::SchaakGUI():ChessWindow(nullptr) {
     update();
 }
 
-
 void SchaakGUI::clicked(int r, int k) {
     if (noPieceSelected()) {
         handleNoPieceSelected(r, k);
+        markThreatenedPositions(r, k);
     } else {
         handlePieceSelected(r, k);
+        markThreatenedPieces(r, k);
     }
 }
 
@@ -57,9 +58,90 @@ void SchaakGUI::highlightValidMoves(SchaakStuk& piece) {
     }
 }
 
+void SchaakGUI::markThreatenedPositions(int r, int k) {
+    SchaakStuk* selectedPiece = g.getPiece(r, k);
+    if (selectedPiece == nullptr) {
+        return;
+    }
+
+    vector<pair<int, int>> threatened_positions;
+    vector<pair<int, int>> valid_moves = selectedPiece->geldige_zetten(g);
+
+    // Check each valid move to see if the opponent can capture the selected piece
+    for (const auto& move : valid_moves) {
+        int dest_row = move.first;
+        int dest_col = move.second;
+        SchaakStuk* piece_at_dest = g.getPiece(dest_row, dest_col);
+
+        // Temporarily move the selected piece to the destination and see if it gets captured
+        g.setPiece(dest_row, dest_col, selectedPiece);
+        g.setPiece(r, k, nullptr);
+
+        // Check if the opponent's pieces can capture the selected piece
+        bool is_captured = false;
+        for (auto& entry : g.schaakbord) {
+            if (entry.second != nullptr && entry.second->getKleur() != currentPlayer) {
+                vector<pair<int, int>> opp_valid_moves = entry.second->geldige_zetten(g);
+                for (const auto& opp_move : opp_valid_moves) {
+                    if (opp_move.first == dest_row && opp_move.second == dest_col) {
+                        is_captured = true;
+                        break;
+                    }
+                }
+            }
+            if (is_captured) {
+                break;
+            }
+        }
+
+        // Restore the position of the selected piece on the board
+        g.setPiece(r, k, selectedPiece);
+        g.setPiece(dest_row, dest_col, piece_at_dest);
+
+        // If the selected piece can be captured at the destination, mark it as threatened
+        if (is_captured) {
+            threatened_positions.emplace_back(dest_row, dest_col);
+        }
+    }
+
+    // Mark the threatened positions in red
+    for (const auto& threatened_pos : threatened_positions) {
+        setTileThreat(threatened_pos.first, threatened_pos.second, true);
+    }
+}
+
+void SchaakGUI::markThreatenedPieces(int r, int k) {
+    SchaakStuk* selectedPiece = g.getPiece(r, k);
+    if (selectedPiece == nullptr) {
+        return;
+    }
+
+    // Check if the opponent's pieces can capture the selected piece
+    for (auto& entry : g.schaakbord) {
+        if (entry.second != nullptr && entry.second->getKleur() != currentPlayer) {
+            vector<pair<int, int>> opp_valid_moves = entry.second->geldige_zetten(g);
+            for (const auto& opp_move : opp_valid_moves) {
+                if (opp_move.first == r && opp_move.second == k) {
+                    setPieceThreat(entry.first.first, entry.first.second, true);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void SchaakGUI::removeAllTileMarking() {
+    for (int r = 0; r < 8; r++) {
+        for (int k = 0; k < 8; k++) {
+            setTileFocus(r, k, false);
+            setTileThreat(r, k, false);
+        }
+    }
+}
+
 void SchaakGUI::handlePieceSelected(int r, int k) {
     setTileSelect(selectedPieceRow, selectedPieceCol, false);
-    removeAllMarking();
+    removeAllTileMarking();
     if (r == selectedPieceRow && k == selectedPieceCol) {
         deselectPiece();
     } else {
@@ -83,8 +165,6 @@ void SchaakGUI::moveSelectedPiece(int r, int k) {
     deselectPiece();
 }
 
-
-
 void SchaakGUI::newGame() {
     // Clear the chessboard and reset the GUI
     clearBoard();
@@ -98,7 +178,6 @@ void SchaakGUI::newGame() {
     currentPlayer = wit;
     update();
 }
-
 
 void SchaakGUI::save() {
     QFile file;

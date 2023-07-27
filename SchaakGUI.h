@@ -35,6 +35,9 @@ private:
     void selectPiece(int r, int k);
     void handleNoPieceSelected(int r, int k);
     bool noPieceSelected() const;
+    void markThreatenedPositions(int r, int k);
+    void markThreatenedPieces(int r, int k);
+    void removeAllTileMarking();
 
 
 /*  Overgeerfde functies van ChessWindow:
