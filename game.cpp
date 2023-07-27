@@ -292,12 +292,12 @@ void Game::setPiece(int r, int k, SchaakStuk* s) {
 }
 
 bool Game::gameOver() {
-    // Check if current player is in checkmate
-    if (schaakmat(currentPlayer)) {
-        return true;
-    }
     // Check if current player is in stalemate (pat)
     if (pat(currentPlayer)) {
+        return true;
+    }
+    // Check if current player is in checkmate
+    if (schaakmat(currentPlayer)) {
         return true;
     }
     return false;
