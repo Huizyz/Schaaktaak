@@ -50,10 +50,10 @@ void SchaakGUI::selectPiece(int r, int k) {
 void SchaakGUI::highlightValidMoves(SchaakStuk& piece) {
     vector<pair<int, int>> valid_moves = piece.geldige_zetten(g);
     for (auto move : valid_moves) {
-        setTileFocus(move.first, move.second, true);
+        setTileFocus(move.first, move.second, displayMoves());
         SchaakStuk* targetPiece = g.getPiece(move.first, move.second);
         if (targetPiece != nullptr) {
-            setPieceThreat(move.first, move.second, true);
+            setPieceThreat(move.first, move.second, displayKills());
         }
     }
 }
@@ -106,7 +106,7 @@ void SchaakGUI::markThreatenedPositions(int r, int k) {
 
     // Mark the threatened positions in red
     for (const auto& threatened_pos : threatened_positions) {
-        setTileThreat(threatened_pos.first, threatened_pos.second, true);
+        setTileThreat(threatened_pos.first, threatened_pos.second, displayThreats());
     }
 }
 
@@ -122,7 +122,7 @@ void SchaakGUI::markThreatenedPieces(int r, int k) {
             vector<pair<int, int>> opp_valid_moves = entry.second->geldige_zetten(g);
             for (const auto& opp_move : opp_valid_moves) {
                 if (opp_move.first == r && opp_move.second == k) {
-                    setPieceThreat(entry.first.first, entry.first.second, true);
+                    setPieceThreat(entry.first.first, entry.first.second, displayKills());
                     break;
                 }
             }
