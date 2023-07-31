@@ -179,6 +179,26 @@ void SchaakGUI::newGame() {
     update();
 }
 
+void SchaakGUI::visualizationChange() {
+    QString visstring = QString(displayMoves()?"T":"F")+(displayKills()?"T":"F")+(displayThreats()?"T":"F");
+    message(QString("Visualization changed : ")+visstring);
+}
+
+// Update de inhoud van de grafische weergave van het schaakbord (scene)
+// en maak het consistent met de game state in variabele g.
+void SchaakGUI::update() {
+    clearBoard();
+    removeAllMarking();
+    for(int r = 0; r < 8; r++) {
+        for (int k = 0; k < 8; k++) {
+            SchaakStuk* s = this->g.getPiece(r,k);
+            if(s != nullptr){
+                this->setItem(r,k, s);
+            }
+        }
+    }
+}
+
 void SchaakGUI::save() {
     QFile file;
     if (openFileToWrite(file)) {
@@ -230,24 +250,4 @@ void SchaakGUI::undo() {
 
 void SchaakGUI::redo() {
     message("Je hebt redo gekozen");
-}
-
-void SchaakGUI::visualizationChange() {
-    QString visstring = QString(displayMoves()?"T":"F")+(displayKills()?"T":"F")+(displayThreats()?"T":"F");
-    message(QString("Visualization changed : ")+visstring);
-}
-
-// Update de inhoud van de grafische weergave van het schaakbord (scene)
-// en maak het consistent met de game state in variabele g.
-void SchaakGUI::update() {
-    clearBoard();
-    removeAllMarking();
-    for(int r = 0; r < 8; r++) {
-        for (int k = 0; k < 8; k++) {
-            SchaakStuk* s = this->g.getPiece(r,k);
-            if(s != nullptr){
-                this->setItem(r,k, s);
-            }
-        }
-    }
 }

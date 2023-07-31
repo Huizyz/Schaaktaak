@@ -26,8 +26,6 @@ public:
 
     virtual vector<pair<int, int>> geldige_zetten(Game& g) { return {}; }
 
-    virtual vector<pair<int, int>> geldige_zetten_met_bedreiging(Game& g) { return {}; }
-
 private:
     zw kleur;
 };

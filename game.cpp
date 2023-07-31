@@ -56,39 +56,20 @@ bool Game::move(SchaakStuk* s, int r, int k) {
 
     // Check if the move is valid
     vector<pair<int, int>> valid_moves = s->geldige_zetten(*this);
-    bool is_valid = false;
     for (auto& move : valid_moves) {
         if (move.first == r && move.second == k) {
-            is_valid = true;
-            break;
+            // Remove the piece from the current position
+            schaakbord.erase(make_pair(current_row, current_col));
+            // Place the piece in the new position
+            setPiece(r, k, s);
+
+            return true;
         }
     }
 
-    // If the move is valid, update the board
-    if (is_valid) {
-        // remove the piece from the current position
-        schaakbord.erase(make_pair(current_row, current_col));
-        // place the piece in the new position
-        setPiece(r, k, s);
-
-        // Check if the game is over
-        if (gameOver()) {
-            // Display appropriate message for game over
-            if (schaakmat(currentPlayer)) {
-                message("Spel afgelopen. Gewonnen door ");
-                message(currentPlayer == zwart ? "wit" : "zwart");
-                message("!");
-            } else if (pat(currentPlayer)) {
-                message("Spel afgelopen. Het is een gelijkspel (pat)!");
-            }
-        }
-
-        return true;
-    } else {
-        return false;
-    }
+    // If the move is not valid, return false
+    return false;
 }
-
 
 // Geeft true als kleur schaak staat
 bool Game::schaak(zw kleur) {
