@@ -7,7 +7,6 @@
 #include "guicode/message.h"
 
 Game::Game() {
-    currentPlayer = zwart;
 }
 
 Game::~Game() {}
@@ -25,6 +24,7 @@ void Game::setStartBord() {
     }
 
     // Set black pieces
+
     setPiece(0, 0, new Toren(zwart));
     setPiece(0, 1, new Paard(zwart));
     setPiece(0, 2, new Loper(zwart));
@@ -43,6 +43,7 @@ void Game::setStartBord() {
     setPiece(7, 5, new Loper(wit));
     setPiece(7, 6, new Paard(wit));
     setPiece(7, 7, new Toren(wit));
+
 }
 
 // Verplaats stuk s naar positie (r,k)
@@ -77,10 +78,12 @@ bool Game::schaak(zw kleur) {
     int king_row = -1;
     int king_col = -1;
     for (auto& pair : schaakbord) {
-        if (pair.second != nullptr && pair.second->getKleur() == kleur && dynamic_cast<Koning*>(pair.second) != nullptr) {
-            king_row = pair.first.first;
-            king_col = pair.first.second;
-            break;
+        if (pair.second != nullptr && dynamic_cast<Koning*>(pair.second) != nullptr) {
+            if (pair.second->getKleur() == kleur) {
+                king_row = pair.first.first;
+                king_col = pair.first.second;
+                break;
+            }
         }
     }
 
@@ -118,10 +121,12 @@ bool Game::schaakmat(zw kleur) {
     int king_row = -1;
     int king_col = -1;
     for (auto& entry : schaakbord) {
-        if (entry.second != nullptr && entry.second->getKleur() == kleur && dynamic_cast<Koning*>(entry.second) != nullptr) {
-            king_row = entry.first.first;
-            king_col = entry.first.second;
-            break;
+        if (entry.second != nullptr && dynamic_cast<Koning*>(entry.second) != nullptr) {
+            if (entry.second->getKleur() == kleur) {
+                king_row = entry.first.first;
+                king_col = entry.first.second;
+                break;
+            }
         }
     }
 
@@ -144,12 +149,14 @@ bool Game::schaakmat(zw kleur) {
 
     // Check if any other piece of the same color can move to block the attack or capture the attacker
     for (auto& entry : schaakbord) {
-        if (entry.second != nullptr && entry.second->getKleur() == kleur && entry.second != king) {
-            vector<pair<int, int>> valid_moves = entry.second->geldige_zetten(*this);
-            for (auto& move : valid_moves) {
-                // Check if the piece can move to block or capture the attacker without putting the king in check
-                if (!kingInCheckAfterMove(king_row, king_col, move.first, move.second)) {
-                    return false; // Another piece can move to block or capture the attacker
+        if (entry.second != nullptr && dynamic_cast<Koning*>(entry.second) == nullptr) {
+            if (entry.second->getKleur() == kleur && entry.second != king) {
+                vector<pair<int, int>> valid_moves = entry.second->geldige_zetten(*this);
+                for (auto& move : valid_moves) {
+                    // Check if the piece can move to block or capture the attacker without putting the king in check
+                    if (!kingInCheckAfterMove(king_row, king_col, move.first, move.second)) {
+                        return false; // Another piece can move to block or capture the attacker
+                    }
                 }
             }
         }

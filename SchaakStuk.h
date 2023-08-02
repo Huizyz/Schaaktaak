@@ -26,12 +26,11 @@ public:
 
     virtual vector<pair<int, int>> geldige_zetten(Game& g) { return {}; }
 
+    bool possible_move_checker(int r, int k) const;
+
 private:
     zw kleur;
 };
-
-// bekijk oude SchaakStuk.h file als er problemen optreden
-// De Piece piece functies zijn anders geschreven
 
 class Pion:public SchaakStuk {
 public:
@@ -75,6 +74,8 @@ public:
 
 };
 
+
+
 class Koning:public SchaakStuk {
 public:
     explicit Koning(zw kleur):SchaakStuk(kleur) {}
@@ -82,7 +83,7 @@ public:
     Piece piece() const override;
 
 
-    vector<pair<int, int>> geldige_zetten(Game& g) override;
+    vector<pair<int, int>> geldige_zetten(Game& game) override;
 
 };
 

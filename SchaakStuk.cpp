@@ -238,6 +238,7 @@ Piece Koning::piece() const {
     return {Piece::King,getKleur()==wit?Piece::White:Piece::Black};
 }
 
+/*
 vector<pair<int, int>> Koning::geldige_zetten(Game& g) {
     vector<pair<int, int>> valid_moves;
     int current_row = g.getPieceRow(this);
@@ -270,7 +271,39 @@ vector<pair<int, int>> Koning::geldige_zetten(Game& g) {
 
     return valid_moves;
 }
+*/
 
+bool SchaakStuk::possible_move_checker(int r, int k) const {
+    return (r>=0 and r < 8) and (k >=0 and k<8);
+}
+
+vector<pair<int, int>> Koning::geldige_zetten(Game &game) {
+    vector<pair<int,int>> move;
+    int current_row = game.getPieceRow((SchaakStuk *) this);
+    int current_col = game.getPieceCol((SchaakStuk *) this);
+    int new_row;
+    int new_col;
+    for(int i = -1; i <= 1 ; i++){
+        for(int j = -1; j<=1; j++){
+            if(i==0 and j ==0){
+                continue;
+            }
+            new_row = current_row + i;
+            new_col = current_col + j;
+            if(possible_move_checker(new_row, new_col)){
+                auto piece = game.getPiece(new_row,new_col);
+                if(piece== nullptr){
+                    move.push_back({new_row,new_col});
+                }else{
+                    if(piece->getKleur() != getKleur()){
+                        move.push_back({new_row,new_col});
+                    }
+                }
+            }
+        }
+    }
+    return move;
+}
 
 
 Piece Koningin::piece() const {

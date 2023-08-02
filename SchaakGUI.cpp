@@ -31,6 +31,7 @@ bool SchaakGUI::noPieceSelected() const {
     return (selectedPieceRow == -1 && selectedPieceCol == -1);
 }
 
+//wanneer er nog op niets is gedrukt, de 1ste keer dat je een pion gaat selecteren
 void SchaakGUI::handleNoPieceSelected(int r, int k) {
     SchaakStuk* s = g.getPiece(r, k);
     if (s != nullptr && s->getKleur() == currentPlayer) {
@@ -139,6 +140,7 @@ void SchaakGUI::removeAllTileMarking() {
     }
 }
 
+//met het geselecteerde pion te werkt te gaan
 void SchaakGUI::handlePieceSelected(int r, int k) {
     setTileSelect(selectedPieceRow, selectedPieceCol, false);
     removeAllTileMarking();

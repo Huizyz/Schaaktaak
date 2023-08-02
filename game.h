@@ -29,6 +29,7 @@ public:
     bool kingInCheckAfterMove(int from_row, int from_col, int to_row, int to_col);
     void resetGame();
 
+public:
     //getter
     SchaakStuk* getPiece(int r, int k);
     int getPieceRow(SchaakStuk* s);

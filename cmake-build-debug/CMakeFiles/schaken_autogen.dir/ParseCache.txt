@@ -2,8 +2,8 @@
 C:/Users/ZeMis/CLionProjects/Schaaktaak/SchaakGUI.h
 C:/Users/ZeMis/CLionProjects/Schaaktaak/guicode/chessboard.cpp
 C:/Users/ZeMis/CLionProjects/Schaaktaak/SchaakStuk.h
-C:/Users/ZeMis/CLionProjects/Schaaktaak/game.h
 C:/Users/ZeMis/CLionProjects/Schaaktaak/guicode/message.h
+C:/Users/ZeMis/CLionProjects/Schaaktaak/game.h
 C:/Users/ZeMis/CLionProjects/Schaaktaak/guicode/ChessWindow.h
  mmc:Q_OBJECT
  mdp:C:/Users/ZeMis/CLionProjects/Schaaktaak/guicode/ChessWindow.h

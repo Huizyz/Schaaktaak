@@ -1,8 +1,5 @@
 Board problems:
 
-problem 1
-During the 1st round when pressing on an empty square, the game crashes.
-
 problem 2
 When pawn reaches the the last row and player decides to click on said pawn,
 the following error occurs and the board gets expanded and scales its self
@@ -16,6 +13,3 @@ game does not end when king gets eaten; implement game over function.
 
 problem 4
 king can move onto dangerous squares, check if this has to be fixed
-
-Pawn:
-fixed // when first moving knight above pawn if pawn hasnt moved yet it can jump over it
