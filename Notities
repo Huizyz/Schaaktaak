@@ -13,3 +13,7 @@ game does not end when king gets eaten; implement game over function.
 
 problem 4
 king can move onto dangerous squares, check if this has to be fixed
+
+CLean
+Schaakstuk.cpp
+game.cpp

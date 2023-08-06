@@ -273,36 +273,35 @@ vector<pair<int, int>> Koning::geldige_zetten(Game& g) {
 }
 */
 
-bool SchaakStuk::possible_move_checker(int r, int k) const {
+bool SchaakStuk::moveChecker(int r, int k) const {
     return (r>=0 and r < 8) and (k >=0 and k<8);
 }
 
-vector<pair<int, int>> Koning::geldige_zetten(Game &game) {
-    vector<pair<int,int>> move;
-    int current_row = game.getPieceRow((SchaakStuk *) this);
-    int current_col = game.getPieceCol((SchaakStuk *) this);
-    int new_row;
-    int new_col;
+vector<pair<int, int>> Koning::geldige_zetten(Game &g) {
+    vector<pair<int, int>> valid_moves;
+    int current_row = g.getPieceRow(this);
+    int current_col = g.getPieceCol(this);
+
     for(int i = -1; i <= 1 ; i++){
         for(int j = -1; j<=1; j++){
             if(i==0 and j ==0){
                 continue;
             }
-            new_row = current_row + i;
-            new_col = current_col + j;
-            if(possible_move_checker(new_row, new_col)){
-                auto piece = game.getPiece(new_row,new_col);
+            int new_row = current_row + i;
+            int new_col = current_col + j;
+            if(moveChecker(new_row, new_col)){
+                auto piece = g.getPiece(new_row,new_col);
                 if(piece== nullptr){
-                    move.push_back({new_row,new_col});
+                    valid_moves.emplace_back(new_row,new_col);
                 }else{
                     if(piece->getKleur() != getKleur()){
-                        move.push_back({new_row,new_col});
+                        valid_moves.emplace_back(new_row,new_col);
                     }
                 }
             }
         }
     }
-    return move;
+    return valid_moves;
 }
 
 

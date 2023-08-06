@@ -110,6 +110,52 @@ bool Game::schaak(zw kleur) {
     return false;
 }
 
+/*
+//Daniel's code
+bool Game::schaak(zw kleur) {
+    //find the king
+    vector<int> king_pos = find_king(kleur);
+    int king_row = king_pos[0];
+    int king_col = king_pos[1];
+
+    //checks if the king is in check by finding the piece that can "take" the king
+    for(int i = 0;i<8;i++){
+        for(int j =0;j<8;j++){
+            auto piece = getPiece(i,j);
+            if(piece != nullptr and piece->getKleur() != kleur){
+                auto valid_moves = piece->geldige_zetten(*this);
+                for(auto p : valid_moves){
+                    if(p.first == king_row and p.second == king_col){
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+//code to find the king row and column by looping through all the pieces until it finds the king of the given color
+vector<int> Game::find_king(zw kleur) {
+    vector<int> king_pos;
+    int king_row;
+    int king_col;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            auto piece = getPiece(i,j);
+            if (piece != nullptr and piece->piece().type() == Piece::King and piece->getKleur() == kleur) {
+                king_row = i;
+                king_col = j;
+            }
+        }
+    }
+    king_pos.emplace_back(king_row);
+    king_pos.emplace_back(king_col);
+    return king_pos;
+}
+//tot hier
+*/
+
 // Geeft true als kleur schaakmat staat
 bool Game::schaakmat(zw kleur) {
     // Check if the king is in check

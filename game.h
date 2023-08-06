@@ -28,6 +28,7 @@ public:
     bool gameOver();
     bool kingInCheckAfterMove(int from_row, int from_col, int to_row, int to_col);
     void resetGame();
+    vector<int> find_king(zw kleur);
 
 public:
     //getter
