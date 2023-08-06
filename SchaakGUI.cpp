@@ -19,9 +19,11 @@ SchaakGUI::SchaakGUI():ChessWindow(nullptr) {
 
 void SchaakGUI::clicked(int r, int k) {
     if (noPieceSelected()) {
+        highlightAllThreats();
         handleNoPieceSelected(r, k);
         markThreatenedPositions(r, k);
     } else {
+        highlightAllThreats();
         handlePieceSelected(r, k);
         markThreatenedPieces(r, k);
     }
@@ -58,6 +60,24 @@ void SchaakGUI::highlightValidMoves(SchaakStuk& piece) {
         }
     }
 }
+
+void SchaakGUI::highlightAllThreats() {
+    for (int r = 0; r < 8; r++) {
+        for (int k = 0; k < 8; k++) {
+            SchaakStuk* piece = g.getPiece(r, k);
+            if (piece != nullptr) {
+                vector<pair<int, int>> valid_moves = piece->geldige_zetten(g);
+                for (auto move : valid_moves) {
+                    SchaakStuk* targetPiece = g.getPiece(move.first, move.second);
+                    if (targetPiece != nullptr) {
+                        setPieceThreat(move.first, move.second, displayKills());
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 void SchaakGUI::markThreatenedPositions(int r, int k) {
     SchaakStuk* selectedPiece = g.getPiece(r, k);
