@@ -26,7 +26,7 @@ public:
 
     virtual vector<pair<int, int>> geldige_zetten(Game& g) { return {}; }
 
-    bool moveChecker(int r, int k) const;
+    bool possible_move_checker(int r, int k) const;
 
 private:
     zw kleur;

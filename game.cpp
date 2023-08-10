@@ -54,7 +54,9 @@ bool Game::move(SchaakStuk* s, int r, int k) {
     // Get the current position of the piece
     int current_row = getPieceRow(s);
     int current_col = getPieceCol(s);
-
+    zw color = s->getKleur();
+    auto saved = getPiece(r,k);
+    bool valid = false;
     // Check if the move is valid
     vector<pair<int, int>> valid_moves = s->geldige_zetten(*this);
     for (auto& move : valid_moves) {
@@ -63,13 +65,21 @@ bool Game::move(SchaakStuk* s, int r, int k) {
             schaakbord.erase(make_pair(current_row, current_col));
             // Place the piece in the new position
             setPiece(r, k, s);
-
-            return true;
+            valid = true;
         }
     }
+    if(!valid){
+        return false;
+    }
 
-    // If the move is not valid, return false
-    return false;
+    if(schaak(color)){
+        setPiece(r,k, nullptr);
+        setPiece(current_row,current_col,s);
+        setPiece(r,k,saved);
+        return false;
+    }
+
+    return true;
 }
 
 // Geeft true als kleur schaak staat
@@ -110,51 +120,6 @@ bool Game::schaak(zw kleur) {
     return false;
 }
 
-/*
-//Daniel's code
-bool Game::schaak(zw kleur) {
-    //find the king
-    vector<int> king_pos = find_king(kleur);
-    int king_row = king_pos[0];
-    int king_col = king_pos[1];
-
-    //checks if the king is in check by finding the piece that can "take" the king
-    for(int i = 0;i<8;i++){
-        for(int j =0;j<8;j++){
-            auto piece = getPiece(i,j);
-            if(piece != nullptr and piece->getKleur() != kleur){
-                auto valid_moves = piece->geldige_zetten(*this);
-                for(auto p : valid_moves){
-                    if(p.first == king_row and p.second == king_col){
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    return false;
-}
-
-//code to find the king row and column by looping through all the pieces until it finds the king of the given color
-vector<int> Game::find_king(zw kleur) {
-    vector<int> king_pos;
-    int king_row;
-    int king_col;
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            auto piece = getPiece(i,j);
-            if (piece != nullptr and piece->piece().type() == Piece::King and piece->getKleur() == kleur) {
-                king_row = i;
-                king_col = j;
-            }
-        }
-    }
-    king_pos.emplace_back(king_row);
-    king_pos.emplace_back(king_col);
-    return king_pos;
-}
-//tot hier
-*/
 
 // Geeft true als kleur schaakmat staat
 bool Game::schaakmat(zw kleur) {
@@ -181,51 +146,40 @@ bool Game::schaakmat(zw kleur) {
         return false;
     }
 
-    // Check if the king has any valid moves to get out of check
-    Koning* king = dynamic_cast<Koning*>(schaakbord[{king_row, king_col}]);
-    if (king) {
-        vector<pair<int, int>> valid_moves = king->geldige_zetten(*this);
-        for (auto& move : valid_moves) {
-            // Check if the king can move to the position without being in check
-            if (!kingInCheckAfterMove(king_row, king_col, move.first, move.second)) {
-                return false; // The king has at least one valid move to get out of check
+    Game copy(*this);
+    vector<SchaakStuk*> zelfdeKleur;
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            if (copy.getPiece(i,j) != nullptr and copy.getPiece(i,j)->getKleur() == kleur){
+                zelfdeKleur.emplace_back(copy.getPiece(i,j));
             }
         }
     }
+    // Iterate over valid moves of pieces
+    for (auto i : zelfdeKleur) {
+        for (auto j : i->geldige_zetten(*this)) {
+            int save_row = getPieceRow(i);
+            int save_col = getPieceCol(i);
+            SchaakStuk* saved_piece = getPiece(j.first, j.second);
 
-    // Check if any other piece of the same color can move to block the attack or capture the attacker
-    for (auto& entry : schaakbord) {
-        if (entry.second != nullptr && dynamic_cast<Koning*>(entry.second) == nullptr) {
-            if (entry.second->getKleur() == kleur && entry.second != king) {
-                vector<pair<int, int>> valid_moves = entry.second->geldige_zetten(*this);
-                for (auto& move : valid_moves) {
-                    // Check if the piece can move to block or capture the attacker without putting the king in check
-                    if (!kingInCheckAfterMove(king_row, king_col, move.first, move.second)) {
-                        return false; // Another piece can move to block or capture the attacker
-                    }
+                copy.setPiece(save_row, save_col, nullptr);
+                copy.setPiece(j.first, j.second, i);
+                // Check if the king is still in check after the move
+                if (!copy.schaak(kleur)) {
+                    copy.setPiece(save_row, save_col, i);
+                    copy.setPiece(j.first, j.second, saved_piece);
+                    return false;// The king can get out of check, not checkmate
                 }
-            }
         }
     }
-
-    // If the king is in check and has no valid moves to get out of check, and no other piece can block or capture the attacker, it's checkmate
     return true;
 }
-
-bool Game::kingInCheckAfterMove(int from_row, int from_col, int to_row, int to_col) {
-    // Temporarily make the move on a copy of the board
-    Game temp_board = *this;
-    temp_board.move(temp_board.getPiece(from_row, from_col), to_row, to_col);
-
-    // Check if the king of the moved piece's color is in check
-    return temp_board.schaak(getPiece(to_row, to_col)->getKleur());
-}
-
 
 // Geeft true als kleur pat staat
 // (pat = geen geldige zet mogelijk, maar kleur staat niet schaak;
 // dit resulteert in een gelijkspel)
 bool Game::pat(zw kleur) {
+    /*
     // Check if the king of the given color is in check
     if (schaak(kleur)) {
         return false; // The king is in check, so it's not pat
@@ -243,6 +197,8 @@ bool Game::pat(zw kleur) {
 
     // If no piece of the given color has valid moves, it's pat
     return true;
+     */
+    return false;
 }
 
 
@@ -281,17 +237,6 @@ void Game::setPiece(int r, int k, SchaakStuk* s) {
     schaakbord[{r, k}] = s;
 }
 
-bool Game::gameOver() {
-    // Check if current player is in stalemate (pat)
-    if (pat(currentPlayer)) {
-        return true;
-    }
-    // Check if current player is in checkmate
-    if (schaakmat(currentPlayer)) {
-        return true;
-    }
-    return false;
-}
 
 void Game::resetGame() {
     // Remove all pieces from the chessboard
