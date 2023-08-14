@@ -32,7 +32,6 @@ private:
     void deselectPiece();
     void handlePieceSelected(int r, int k);
     void highlightValidMoves(SchaakStuk& piece);
-    void highlightAllThreats();
     void selectPiece(int r, int k);
     void handleNoPieceSelected(int r, int k);
     bool noPieceSelected() const;

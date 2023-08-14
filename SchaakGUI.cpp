@@ -212,6 +212,7 @@ void SchaakGUI::update() {
     }
 }
 
+//save, open, undo, redo niet aangeraakt (werkt niet)
 void SchaakGUI::save() {
     QFile file;
     if (openFileToWrite(file)) {

@@ -8,12 +8,11 @@ Error: "QPixmap::scaled: Pixmap is a null pixmap".
 Somehow the black pawn creates another White king outside of the board
 only when selected and only for said duration.
 
-problem 3
-game does not end when king gets eaten; implement game over function.
 
-problem 4
-king can move onto dangerous squares, check if this has to be fixed
-
-CLean
+Clean
 Schaakstuk.cpp
 game.cpp
+
+current problems:
+pion opt einde laat Rook verdwijnen tot je een ander beweegt
+zwarte pion opt einde laat een nieuwe koning tevoorschijn komen

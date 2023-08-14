@@ -179,28 +179,43 @@ bool Game::schaakmat(zw kleur) {
 // (pat = geen geldige zet mogelijk, maar kleur staat niet schaak;
 // dit resulteert in een gelijkspel)
 bool Game::pat(zw kleur) {
-    /*
     // Check if the king of the given color is in check
     if (schaak(kleur)) {
-        return false; // The king is in check, so it's not pat
+        return false; // The king is in check, so it's not stalemate
     }
 
-    // Check if there is any valid move for any piece of the given color
-    for (auto& entry : schaakbord) {
-        if (entry.second != nullptr && entry.second->getKleur() == kleur) {
-            vector<pair<int, int>> valid_moves = entry.second->geldige_zetten(*this);
-            if (!valid_moves.empty()) {
-                return false; // At least one piece has a valid move, so it's not pat
+    // Create a copy of the game board
+    Game copy(*this);
+
+    // Iterate over pieces of the same color
+    vector<SchaakStuk*> zelfdeKleur;
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            if (copy.getPiece(i, j) != nullptr && copy.getPiece(i, j)->getKleur() == kleur) {
+                zelfdeKleur.emplace_back(copy.getPiece(i, j));
             }
         }
     }
 
-    // If no piece of the given color has valid moves, it's pat
-    return true;
-     */
-    return false;
-}
+    // Iterate over valid moves of pieces
+    for (auto i : zelfdeKleur) {
+        for (auto j : i->geldige_zetten(*this)) {
+            // Make the move in the copy
+            int save_row = getPieceRow(i);
+            int save_col = getPieceCol(i);
+            copy.setPiece(j.first, j.second, i);
+            copy.setPiece(save_row, save_col, nullptr);
 
+            // Check if the king is still not in check after the move
+            if (!copy.schaak(kleur)) {
+                return false; // The king can get out of check, not stalemate
+            }
+        }
+    }
+
+    // If the king is not in check and no legal moves are available, it's stalemate
+    return true;
+}
 
 // Geeft een pointer naar het schaakstuk dat op rij r, kolom k staat
 // Als er geen schaakstuk staat op deze positie, geef nullptr terug
