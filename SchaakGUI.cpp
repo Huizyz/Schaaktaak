@@ -212,24 +212,51 @@ void SchaakGUI::update() {
     }
 }
 
-//save, open, undo, redo niet aangeraakt (werkt niet)
 void SchaakGUI::save() {
     QFile file;
     if (openFileToWrite(file)) {
         QDataStream out(&file);
-        out << QString("Rb") << QString("Hb") << QString("Bb") << QString("Qb") << QString("Kb") << QString("Bb") << QString("Hb") << QString("Rb");
-        for  (int i=0;i<8;i++) {
-            out << QString("Pb");
+
+        // Save current player's turn
+        QString CPlayer;
+        if (currentPlayer == wit){
+            CPlayer += "wit";
+        } else{
+            CPlayer += "zwart";
         }
-        for  (int r=3;r<7;r++) {
-            for (int k=0;k<8;k++) {
-                out << QString(".");
+        out << CPlayer;
+
+        for (int r = 0; r < 8; r++) {
+            for (int k = 0; k < 8; k++) {
+                SchaakStuk* piece = g.getPiece(r, k);
+                if (piece == nullptr) {
+                    out << QString("Empty");
+                } else {
+                    QString pieceName;
+                    if (piece->getKleur() == wit) {
+                        pieceName += "White";
+                    } else {
+                        pieceName += "Black";
+                    }
+
+                    if (dynamic_cast<Koning*>(piece) != nullptr) {
+                        pieceName += "King";
+                    } else if (dynamic_cast<Koningin*>(piece) != nullptr) {
+                        pieceName += "Queen";
+                    } else if (dynamic_cast<Toren*>(piece) != nullptr) {
+                        pieceName += "Rook";
+                    } else if (dynamic_cast<Loper*>(piece) != nullptr) {
+                        pieceName += "Bishop";
+                    } else if (dynamic_cast<Paard*>(piece) != nullptr) {
+                        pieceName += "Knight";
+                    } else if (dynamic_cast<Pion*>(piece) != nullptr) {
+                        pieceName += "Pawn";
+                    }
+
+                    out << pieceName;
+                }
             }
         }
-        for  (int i=0;i<8;i++) {
-            out << QString("Pw");
-        }
-        out << QString("Rw") << QString("Hw") << QString("Bw") << QString("Qw") << QString("Kw") << QString("Bw") << QString("Hw") << QString("Rw");
     }
 }
 
@@ -238,21 +265,51 @@ void SchaakGUI::open() {
     if (openFileToRead(file)) {
         try {
             QDataStream in(&file);
-            QString debugstring;
-            for (int r=0;r<8;r++) {
-                for (int k=0;k<8;k++) {
-                    QString piece;
-                    in >> piece;
-                    debugstring += "\t" + piece;
-                    if (in.status()!=QDataStream::Ok) {
+
+            // Load current player's turn
+            QString CPlayer;
+            in >> CPlayer;
+            if (CPlayer == "wit") {
+                currentPlayer = wit;
+            } else {
+                currentPlayer = zwart;
+            }
+
+            for (int r = 0; r < 8; r++) {
+                for (int k = 0; k < 8; k++) {
+                    QString pieceName;
+                    in >> pieceName;
+
+                    if (pieceName == "Empty") {
+                        g.setPiece(r, k, nullptr);
+                    } else {
+                        SchaakStuk* schaakStuk = nullptr;
+                        zw kleur = (pieceName.contains("White")) ? wit : zwart;
+
+                        if (pieceName.contains("King")) {
+                            schaakStuk = new Koning(kleur);
+                        } else if (pieceName.contains("Queen")) {
+                            schaakStuk = new Koningin(kleur);
+                        } else if (pieceName.contains("Rook")) {
+                            schaakStuk = new Toren(kleur);
+                        } else if (pieceName.contains("Bishop")) {
+                            schaakStuk = new Loper(kleur);
+                        } else if (pieceName.contains("Knight")) {
+                            schaakStuk = new Paard(kleur);
+                        } else if (pieceName.contains("Pawn")) {
+                            schaakStuk = new Pion(kleur);
+                        }
+
+                        g.setPiece(r, k, schaakStuk);
+                    }
+
+                    if (in.status() != QDataStream::Ok) {
                         throw QString("Invalid File Format");
                     }
                 }
-                debugstring += "\n";
             }
-            message(debugstring);
-        } catch (QString& Q) {
-            message(Q);
+        } catch (const QString& errorMessage) {
+            message(errorMessage);
         }
     }
     update();
