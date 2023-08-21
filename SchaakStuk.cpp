@@ -18,22 +18,32 @@ vector<pair<int, int>> Pion::geldige_zetten(Game& g) {
     int direction = (getKleur() == zwart ? 1 : -1);
     int current_row = g.getPieceRow(this);
     int current_col = g.getPieceCol(this);
-    if (g.getPiece(current_row + direction, current_col) == nullptr) {
-        valid_moves.emplace_back( current_row + direction, current_col );
+
+    // Check if the square in front is within bounds and empty
+    if (isWithinBounds(current_row + direction, current_col) &&
+        g.getPiece(current_row + direction, current_col) == nullptr) {
+        valid_moves.emplace_back(current_row + direction, current_col);
     }
+
+    // Check for the initial double move
     if (current_row == (getKleur() == zwart ? 1 : 6)) {
-        if (g.getPiece(current_row + direction, current_col) == nullptr &&
-            g.getPiece(current_row + 2 * direction, current_col) == nullptr) {
-            valid_moves.emplace_back( current_row + 2 * direction, current_col );
+        if (isWithinBounds(current_row + 2 * direction, current_col) &&
+            g.getPiece(current_row + 2 * direction, current_col) == nullptr &&
+            g.getPiece(current_row + direction, current_col) == nullptr) {
+            valid_moves.emplace_back(current_row + 2 * direction, current_col);
         }
     }
-    if (g.getPiece(current_row + direction, current_col + 1) != nullptr &&
+
+    // Check for capturing diagonally
+    if (isWithinBounds(current_row + direction, current_col + 1) &&
+        g.getPiece(current_row + direction, current_col + 1) != nullptr &&
         g.getPiece(current_row + direction, current_col + 1)->getKleur() != getKleur()) {
-        valid_moves.emplace_back( current_row + direction, current_col + 1 );
+        valid_moves.emplace_back(current_row + direction, current_col + 1);
     }
-    if (g.getPiece(current_row + direction, current_col - 1) != nullptr &&
+    if (isWithinBounds(current_row + direction, current_col - 1) &&
+        g.getPiece(current_row + direction, current_col - 1) != nullptr &&
         g.getPiece(current_row + direction, current_col - 1)->getKleur() != getKleur()) {
-        valid_moves.emplace_back( current_row + direction, current_col - 1 );
+        valid_moves.emplace_back(current_row + direction, current_col - 1);
     }
     return valid_moves;
 }
@@ -50,51 +60,68 @@ vector<pair<int, int>> Toren::geldige_zetten(Game& g) {
 
     // Check moves to the left
     for (int i = current_col - 1; i >= 0; i--) {
-        if (g.getPiece(current_row, i) == nullptr) {
-            valid_moves.emplace_back(current_row, i);
-        } else {
-            if (g.getPiece(current_row, i)->getKleur() != getKleur()) {
+        if (isWithinBounds(current_row, i)) {
+            if (g.getPiece(current_row, i) == nullptr) {
                 valid_moves.emplace_back(current_row, i);
+            } else {
+                if (g.getPiece(current_row, i)->getKleur() != getKleur()) {
+                    valid_moves.emplace_back(current_row, i);
+                }
+                break;
             }
+        } else {
             break;
         }
     }
 
     // Check moves to the right
     for (int i = current_col + 1; i < 8; i++) {
-        if (g.getPiece(current_row, i) == nullptr) {
-            valid_moves.emplace_back(current_row, i);
-        } else {
-            if (g.getPiece(current_row, i)->getKleur() != getKleur()) {
+        if (isWithinBounds(current_row, i)) {
+            if (g.getPiece(current_row, i) == nullptr) {
                 valid_moves.emplace_back(current_row, i);
+            } else {
+                if (g.getPiece(current_row, i)->getKleur() != getKleur()) {
+                    valid_moves.emplace_back(current_row, i);
+                }
+                break;
             }
+        } else {
             break;
         }
     }
 
     // Check moves upwards
     for (int i = current_row - 1; i >= 0; i--) {
-        if (g.getPiece(i, current_col) == nullptr) {
-            valid_moves.emplace_back(i, current_col);
-        } else {
-            if (g.getPiece(i, current_col)->getKleur() != getKleur()) {
+        if (isWithinBounds(i, current_col)) {
+            if (g.getPiece(i, current_col) == nullptr) {
                 valid_moves.emplace_back(i, current_col);
+            } else {
+                if (g.getPiece(i, current_col)->getKleur() != getKleur()) {
+                    valid_moves.emplace_back(i, current_col);
+                }
+                break;
             }
+        } else {
             break;
         }
     }
 
     // Check moves downwards
     for (int i = current_row + 1; i < 8; i++) {
-        if (g.getPiece(i, current_col) == nullptr) {
-            valid_moves.emplace_back(i, current_col);
-        } else {
-            if (g.getPiece(i, current_col)->getKleur() != getKleur()) {
+        if (isWithinBounds(i, current_col)) {
+            if (g.getPiece(i, current_col) == nullptr) {
                 valid_moves.emplace_back(i, current_col);
+            } else {
+                if (g.getPiece(i, current_col)->getKleur() != getKleur()) {
+                    valid_moves.emplace_back(i, current_col);
+                }
+                break;
             }
+        } else {
             break;
         }
     }
+
     return valid_moves;
 }
 
@@ -106,71 +133,73 @@ vector<pair<int, int>> Paard::geldige_zetten(Game& g) {
     vector<pair<int, int>> valid_moves;
     int current_row = g.getPieceRow(this);
     int current_col = g.getPieceCol(this);
+
     // Check moves left
     if (current_col > 1) {
-        if (current_row > 0) {
+        if (current_row > 0 && isWithinBounds(current_row - 1, current_col - 2)) {
             if (g.getPiece(current_row - 1, current_col - 2) == nullptr ||
                 g.getPiece(current_row - 1, current_col - 2)->getKleur() != getKleur()) {
-                valid_moves.emplace_back( current_row - 1, current_col - 2 );
+                valid_moves.emplace_back(current_row - 1, current_col - 2);
             }
         }
-        if (current_row < 7) {
+        if (current_row < 7 && isWithinBounds(current_row + 1, current_col - 2)) {
             if (g.getPiece(current_row + 1, current_col - 2) == nullptr ||
                 g.getPiece(current_row + 1, current_col - 2)->getKleur() != getKleur()) {
-                valid_moves.emplace_back( current_row + 1, current_col - 2 );
+                valid_moves.emplace_back(current_row + 1, current_col - 2);
             }
         }
     }
 
     // Check moves right
     if (current_col < 6) {
-        if (current_row > 0) {
+        if (current_row > 0 && isWithinBounds(current_row - 1, current_col + 2)) {
             if (g.getPiece(current_row - 1, current_col + 2) == nullptr ||
                 g.getPiece(current_row - 1, current_col + 2)->getKleur() != getKleur()) {
-                valid_moves.emplace_back( current_row - 1, current_col + 2 );
+                valid_moves.emplace_back(current_row - 1, current_col + 2);
             }
         }
-        if (current_row < 7) {
+        if (current_row < 7 && isWithinBounds(current_row + 1, current_col + 2)) {
             if (g.getPiece(current_row + 1, current_col + 2) == nullptr ||
                 g.getPiece(current_row + 1, current_col + 2)->getKleur() != getKleur()) {
-                valid_moves.emplace_back( current_row + 1, current_col + 2 );
+                valid_moves.emplace_back(current_row + 1, current_col + 2);
             }
         }
     }
 
     // Check moves up
     if (current_row > 0) {
-        if (current_col > 0) {
+        if (current_col > 0 && isWithinBounds(current_row - 2, current_col - 1)) {
             if (g.getPiece(current_row - 2, current_col - 1) == nullptr ||
                 g.getPiece(current_row - 2, current_col - 1)->getKleur() != getKleur()) {
-                valid_moves.emplace_back( current_row - 2, current_col - 1 );
+                valid_moves.emplace_back(current_row - 2, current_col - 1);
             }
         }
-        if (current_col < 7) {
+        if (current_col < 7 && isWithinBounds(current_row - 2, current_col + 1)) {
             if (g.getPiece(current_row - 2, current_col + 1) == nullptr ||
                 g.getPiece(current_row - 2, current_col + 1)->getKleur() != getKleur()) {
-                valid_moves.emplace_back( current_row - 2, current_col + 1 );
+                valid_moves.emplace_back(current_row - 2, current_col + 1);
             }
         }
     }
 
     // Check moves down
     if (current_row < 7) {
-        if (current_col > 0) {
+        if (current_col > 0 && isWithinBounds(current_row + 2, current_col - 1)) {
             if (g.getPiece(current_row + 2, current_col - 1) == nullptr ||
                 g.getPiece(current_row + 2, current_col - 1)->getKleur() != getKleur()) {
-                valid_moves.emplace_back( current_row + 2, current_col - 1 );
+                valid_moves.emplace_back(current_row + 2, current_col - 1);
             }
         }
-        if (current_col < 7) {
+        if (current_col < 7 && isWithinBounds(current_row + 2, current_col + 1)) {
             if (g.getPiece(current_row + 2, current_col + 1) == nullptr ||
                 g.getPiece(current_row + 2, current_col + 1)->getKleur() != getKleur()) {
-                valid_moves.emplace_back( current_row + 2, current_col + 1 );
+                valid_moves.emplace_back(current_row + 2, current_col + 1);
             }
         }
     }
     return valid_moves;
 }
+
 
 
 Piece Loper::piece() const {
@@ -183,7 +212,7 @@ vector<pair<int, int>> Loper::geldige_zetten(Game& g) {
     int current_col = g.getPieceCol(this);
 
     // Check moves up-left
-    for (int i = 1; current_row - i >= 0 && current_col - i >= 0; i++) {
+    for (int i = 1; isWithinBounds(current_row - i, current_col - i); i++) {
         SchaakStuk* piece = g.getPiece(current_row - i, current_col - i);
         if (piece == nullptr) {
             valid_moves.emplace_back(current_row - i, current_col - i);
@@ -195,7 +224,7 @@ vector<pair<int, int>> Loper::geldige_zetten(Game& g) {
         }
     }
     // Check moves up-right
-    for (int i = 1; current_row - i >= 0 && current_col + i <= 7; i++) {
+    for (int i = 1; isWithinBounds(current_row - i, current_col + i); i++) {
         SchaakStuk* piece = g.getPiece(current_row - i, current_col + i);
         if (piece == nullptr) {
             valid_moves.emplace_back(current_row - i, current_col + i);
@@ -207,7 +236,7 @@ vector<pair<int, int>> Loper::geldige_zetten(Game& g) {
         }
     }
     // Check moves down-left
-    for (int i = 1; current_row + i <= 7 && current_col - i >= 0; i++) {
+    for (int i = 1; isWithinBounds(current_row + i, current_col - i); i++) {
         SchaakStuk* piece = g.getPiece(current_row + i, current_col - i);
         if (piece == nullptr) {
             valid_moves.emplace_back(current_row + i, current_col - i);
@@ -219,7 +248,7 @@ vector<pair<int, int>> Loper::geldige_zetten(Game& g) {
         }
     }
     // Check moves down-right
-    for (int i = 1; current_row + i <= 7 && current_col + i <= 7; i++) {
+    for (int i = 1; isWithinBounds(current_row + i, current_col + i); i++) {
         SchaakStuk* piece = g.getPiece(current_row + i, current_col + i);
         if (piece == nullptr) {
             valid_moves.emplace_back(current_row + i, current_col + i);
@@ -234,12 +263,13 @@ vector<pair<int, int>> Loper::geldige_zetten(Game& g) {
 }
 
 
+
 Piece Koning::piece() const {
     return {Piece::King,getKleur()==wit?Piece::White:Piece::Black};
 }
 
-bool SchaakStuk::possible_move_checker(int r, int k) const {
-    return (r>=0 and r < 8) and (k >=0 and k<8);
+bool SchaakStuk::isWithinBounds(int r, int k) const {
+    return (r>=0 && r < 8) and (k >=0 && k<8);
 }
 
 vector<pair<int, int>> Koning::geldige_zetten(Game &g) {
@@ -255,7 +285,7 @@ vector<pair<int, int>> Koning::geldige_zetten(Game &g) {
             }
             new_row = current_row + i;
             new_col = current_col + j;
-            if(possible_move_checker(new_row, new_col)){
+            if(isWithinBounds(new_row, new_col)){
                 auto piece = g.getPiece(new_row,new_col);
                 if(piece== nullptr){
                     move.emplace_back(new_row,new_col);
